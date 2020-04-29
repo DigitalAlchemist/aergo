@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	"github.com/aergoio/aergo/fee"
 	"github.com/golang/protobuf/proto"
@@ -56,17 +57,20 @@ type Transaction interface {
 	SetVerifedAccount(account Address) bool
 	RemoveVerifedAccount() bool
 	GetMaxFee(balance, gasPrice *big.Int, version int32) (*big.Int, error)
+	GetAddedTime() time.Time
 }
 
 type transaction struct {
 	Tx              *Tx
+	// addedTime is the time when tx was added to this mempool
+	addedTime       time.Time
 	VerifiedAccount Address
 }
 
 var _ Transaction = (*transaction)(nil)
 
 func NewTransaction(tx *Tx) Transaction {
-	return &transaction{Tx: tx}
+	return &transaction{Tx: tx, addedTime:time.Now()}
 }
 
 func (tx *transaction) GetTx() *Tx {
@@ -76,6 +80,9 @@ func (tx *transaction) GetTx() *Tx {
 	return nil
 }
 
+func (tx *transaction) GetAddedTime() time.Time {
+	return tx.addedTime
+}
 func (tx *transaction) GetBody() *TxBody {
 	return tx.Tx.Body
 }
